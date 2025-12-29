@@ -3,7 +3,7 @@
   hosts: db
   become: yes
   vars:
-    mysql_host:
+    mysql_host: db.expense.rskrishnacloudtech.online
     mysql_root_password: "ExpenseApp@1"
   tasks:
     # Task to install the mysql server.
@@ -32,7 +32,7 @@
       community.mysql.mysql_info:
         login_user: root
         login_password: "{{ mysql_root_password }}"
-        login_host: "{{ login_host }}"
+        login_host: "{{ mysql_host }}"
         filter: version
       ignore_errors: yes
       register: mysql_connection_output
@@ -45,4 +45,3 @@
     - name: Setup root password.
       ansible.builtin.command: "mysql_secure_installation --set-root-pass {{ mysql_root_password }}"
       when: mysql_connection_output.failed is true
-...
