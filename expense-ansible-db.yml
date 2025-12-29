@@ -1,0 +1,48 @@
+---
+- name: Configuring the DB server with mysql server.
+  hosts: db
+  become: yes
+  vars:
+    mysql_host:
+    mysql_root_password: "ExpenseApp@1"
+  tasks:
+    # Task to install the mysql server.
+    - name: Install mysql server
+      ansible.builtin.dnf:
+        name: mysql-server
+        state: latest
+
+    # Starting and enabling the mysqld service.
+    - name: Starting and enabling the mysql server.
+      ansible.builtin.service:
+        name: mysqld
+        state: started
+        enabled: yes
+
+    # Installing python related mysql dependencies as the ansible is develope din python.
+    - name: Install python mysql dependencies
+      ansible.builtin.pip:
+        name:
+          - PyMySQL
+          - cryptography
+        executable: pip3.9 # This pip verision is choosen based on the python version installed.
+
+    # Checking that mysql root password is already set or not.
+    - name: Check that mysql root password is already set or not.
+      community.mysql.mysql_info:
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        login_host: "{{ login_host }}"
+        filter: version
+      ignore_errors: yes
+      register: mysql_connection_output
+
+    - name: Print connection output.
+      ansible.builtin.debug:
+        msg: "MySQL Connection output: {{ mysql_connection_output }}"
+
+    # Setting the root password with if its not set already as per the mysql_connection_output data.
+    - name: Setup root password.
+      ansible.builtin.command: "mysql_secure_installation --set-root-pass {{ mysql_root_password }}"
+      when: mysql_connection_output.failed is true
+...

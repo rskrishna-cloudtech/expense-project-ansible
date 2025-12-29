@@ -1,0 +1,49 @@
+---
+- name: Configuring the frontend server
+  hosts: frontend
+  become: yes
+  tasks:
+  # Installing the nginx server.
+  - name: Install the nginx server.
+    ansible.builtin.dnf:
+      name: nginx
+      state: latest
+ 
+  # Starting and enabling the nginx service.
+  - name: Start and Enable the nginx service.
+    ansible.builtin.service:
+      name: nginx
+      state: started
+      enabled: yes
+ 
+  # Removing the default application content from /usr/share/nginx/html/. We are deleting the entire html directory as we don’t have a module to delete all the files inside a directory.. Need to google about it once later.
+  - name: Remove the default application content from /usr/share/nginx/html/.
+    ansible.builtin.file:
+      path: /usr/share/nginx/html
+      state: absent 
+ 
+  # Creating a deleted html directory again.
+  - name: Create html directory which is deleted above.
+    ansible.builtin.file:
+      path: /usr/share/nginx/html
+      state: directory
+ 
+  # Downloading and Extracting the frontend code into /usr/share/nginx/html.
+  - name: Download and extract the frontend code into /usr/share/nginx/html path.
+    ansible.builtin.unarchive:
+      src: https://expense-builds.s3.us-east-1.amazonaws.com/expense-frontend-v2.zip
+      dest: /usr/share/nginx/html
+      remote_src: yes
+ 
+  # Creating expense.conf file and configure the backend server host details inside it and copy this file to /etc/nginx/default.d/expense.conf
+  - name: Create expense.conf file and configure the backend server details and copy this file to /etc/nginx/default.d/expense.conf.
+    ansible.builtin.copy:
+      src: expense.conf
+      dest: /etc/nginx/default.d/expense.conf
+ 
+  # Restarting the nginx service.
+  - name: Restart nginx service.
+    ansible.builtin.service:
+      name: nginx
+      state: started
+...  
