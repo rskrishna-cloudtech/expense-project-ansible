@@ -45,5 +45,5 @@
   - name: Restart nginx service.
     ansible.builtin.service:
       name: nginx
-      state: started
+      state: restarted
 ...  
